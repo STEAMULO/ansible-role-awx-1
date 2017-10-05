@@ -35,6 +35,8 @@ awx_web_container_links: |
   }}
 awx_task_container_links: "{{ awx_web_container_links + ['awx_web:awxweb'] }}"
 awx_volumes: []
+awx_web_prefix_commands: []
+awx_task_prefix_commands: []
 
 # Outbound proxy configurations. https://curl.haxx.se/docs/manual.html
 awx_http_proxy: ""

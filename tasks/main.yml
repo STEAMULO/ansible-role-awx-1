@@ -72,6 +72,7 @@
     links: "{{ awx_web_container_links }}"
     hostname: awxweb
     volumes: "{{ awx_volumes }}"
+    command: "{{ _awx.web_cmd }}"
     env:
       http_proxy: "{{ awx_http_proxy }}"
       https_proxy: "{{ awx_https_proxy }}"
@@ -102,6 +103,7 @@
     links: "{{ awx_task_container_links }}"
     hostname: awx
     volumes: "{{ awx_volumes }}"
+    command: "{{ _awx.task_cmd }}"
     env:
       http_proxy: "{{ awx_http_proxy }}"
       https_proxy: "{{ awx_https_proxy }}"
