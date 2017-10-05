@@ -1,4 +1,4 @@
 ---
 _awx:
-  web_cmd: "{{ (awx_web_prefix_commands + ['/usr/bin/launch_awx.sh']) | join(' && ') }}"
-  task_cmd: "{{ (awx_task_prefix_commands + ['/usr/bin/launch_awx_task.sh']) | join(' && ') }}"
+  web_cmd: sh -c '{{ (awx_web_prefix_commands + ['/usr/bin/launch_awx.sh']) | join(' && ') }}'
+  task_cmd: sh -c '{{ (awx_task_prefix_commands + ['/usr/bin/launch_awx_task.sh']) | join(' && ') }}'
