@@ -1,0 +1,5 @@
+FROM {{ item.image }}
+
+RUN apk update && \
+    apk add --no-cache py2-pip sudo bash ca-certificates && \
+    pip install docker-py

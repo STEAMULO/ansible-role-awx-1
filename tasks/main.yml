@@ -1,0 +1,121 @@
+---
+# tasks file for awx
+
+- name: Generate AWX secret key
+  copy:
+    content: "{{ 2147483648 | random | hash('sha1') }}"
+    dest: /etc/awx_secret_key
+    owner: root
+    group: root
+    mode: 0600
+    force: no
+  when: awx_secret_key is not defined
+
+- name: Remove on-disk secret key
+  file:
+    path: /etc/awx_secret_key
+    state: absent
+  when: awx_secret_key is defined
+
+- name: Read AWX secret key
+  command: cat /etc/awx_secret_key
+  register: _awx_secret_key
+  changed_when: false
+  when: awx_secret_key is not defined
+
+- name: Set AWX secret key variable
+  set_fact:
+    awx_secret_key: "{{ _awx_secret_key.stdout }}"
+  when: awx_secret_key is not defined
+
+- name: Run PostgreSQL container
+  docker_container:
+    name: postgres
+    state: started
+    restart_policy: unless-stopped
+    image: "{{ awx_postgres_image }}"
+    volumes:
+      - "{{ awx_postgres_data_volume }}:/var/lib/postgresql/data:Z"
+    env:
+      POSTGRES_USER: "{{ awx_postgres_user }}"
+      POSTGRES_PASSWORD: "{{ awx_postgres_password }}"
+      POSTGRES_DB: "{{ awx_postgres_db }}"
+  when: awx_postgres_deploy
+
+- name: Run RabbitMQ container
+  docker_container:
+    name: rabbitmq
+    state: started
+    restart_policy: unless-stopped
+    image: "{{ awx_rabbitmq_image }}"
+    env:
+      RABBITMQ_DEFAULT_VHOST: "{{ awx_rabbitmq_vhost }}"
+  when: awx_rabbitmq_deploy
+
+- name: Run memcached container
+  docker_container:
+    name: memcached
+    state: started
+    restart_policy: unless-stopped
+    image: "{{ awx_memcached_image }}"
+  when: awx_memcached_deploy
+
+- name: Run AWX Web container
+  docker_container:
+    name: awx_web
+    state: started
+    restart_policy: unless-stopped
+    image: "{{ awx_web_image }}"
+    user: root
+    ports:
+      - "{{ awx_web_port }}:8052"
+    links: "{{ awx_web_container_links }}"
+    hostname: awxweb
+    env:
+      http_proxy: "{{ awx_http_proxy }}"
+      https_proxy: "{{ awx_https_proxy }}"
+      no_proxy: "{{ awx_no_proxy }}"
+      SECRET_KEY: "{{ awx_secret_key }}"
+      DATABASE_NAME: "{{ awx_postgres_db }}"
+      DATABASE_USER: "{{ awx_postgres_user }}"
+      DATABASE_PASSWORD: "{{ awx_postgres_password }}"
+      DATABASE_HOST: "{{ awx_postgres_host }}"
+      DATABASE_PORT: "{{ awx_postgres_port }}"
+      RABBITMQ_USER: "{{ awx_rabbitmq_user }}"
+      RABBITMQ_PASSWORD: "{{ awx_rabbitmq_password }}"
+      RABBITMQ_HOST: "{{ awx_rabbitmq_host }}"
+      RABBITMQ_PORT: "{{ awx_rabbitmq_port }}"
+      RABBITMQ_VHOST: "{{ awx_rabbitmq_vhost }}"
+      MEMCACHED_HOST: "{{ awx_memcached_host }}"
+      MEMCACHED_PORT: "{{ awx_memcached_port }}"
+      AWX_ADMIN_USER: "{{ awx_admin_user }}"
+      AWX_ADMIN_PASSWORD: "{{ awx_admin_password }}"
+
+- name: Run AWX Task container
+  docker_container:
+    name: awx_task
+    state: started
+    restart_policy: unless-stopped
+    image: "{{ awx_task_image }}"
+    user: root
+    links: "{{ awx_task_container_links }}"
+    hostname: awx
+    env:
+      http_proxy: "{{ awx_http_proxy }}"
+      https_proxy: "{{ awx_https_proxy }}"
+      no_proxy: "{{ awx_no_proxy }}"
+      SECRET_KEY: "{{ awx_secret_key }}"
+      DATABASE_NAME: "{{ awx_postgres_db }}"
+      DATABASE_USER: "{{ awx_postgres_user }}"
+      DATABASE_PASSWORD: "{{ awx_postgres_password }}"
+      DATABASE_HOST: "{{ awx_postgres_host }}"
+      DATABASE_PORT: "{{ awx_postgres_port }}"
+      RABBITMQ_USER: "{{ awx_rabbitmq_user }}"
+      RABBITMQ_PASSWORD: "{{ awx_rabbitmq_password }}"
+      RABBITMQ_HOST: "{{ awx_rabbitmq_host }}"
+      RABBITMQ_PORT: "{{ awx_rabbitmq_port }}"
+      RABBITMQ_VHOST: "{{ awx_rabbitmq_vhost }}"
+      MEMCACHED_HOST: "{{ awx_memcached_host }}"
+      MEMCACHED_PORT: "{{ awx_memcached_port }}"
+      AWX_ADMIN_USER: "{{ awx_admin_user }}"
+      AWX_ADMIN_PASSWORD: "{{ awx_admin_password }}"
