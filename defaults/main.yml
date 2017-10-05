@@ -34,6 +34,7 @@ awx_web_container_links: |
     (['memcached'] if awx_memcached_deploy else [])
   }}
 awx_task_container_links: "{{ awx_web_container_links + ['awx_web:awxweb'] }}"
+awx_volumes: []
 
 # Outbound proxy configurations. https://curl.haxx.se/docs/manual.html
 awx_http_proxy: ""

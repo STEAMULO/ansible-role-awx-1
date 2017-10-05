@@ -71,6 +71,7 @@
       - "{{ awx_web_port }}:8052"
     links: "{{ awx_web_container_links }}"
     hostname: awxweb
+    volumes: "{{ awx_volumes }}"
     env:
       http_proxy: "{{ awx_http_proxy }}"
       https_proxy: "{{ awx_https_proxy }}"
@@ -100,6 +101,7 @@
     user: root
     links: "{{ awx_task_container_links }}"
     hostname: awx
+    volumes: "{{ awx_volumes }}"
     env:
       http_proxy: "{{ awx_http_proxy }}"
       https_proxy: "{{ awx_https_proxy }}"
