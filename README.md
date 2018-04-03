@@ -8,7 +8,70 @@ Requirements
 
 Docker and docker-py must be installed on the target machine.
 
+Role Variables
+--------------
+
+	awx_postgres_deploy: true
+	awx_postgres_image: postgres:9.6
+	awx_postgres_data_volume: /var/lib/awx/postgres
+	awx_postgres_user: awx
+	awx_postgres_password: changeme
+	awx_postgres_db: awx
+	awx_postgres_host: postgres
+	awx_postgres_port: "5432"
+
+	awx_rabbitmq_deploy: true
+	awx_rabbitmq_image: rabbitmq:3
+	awx_rabbitmq_vhost: awx
+	awx_rabbitmq_user: guest
+	awx_rabbitmq_password: guest
+	awx_rabbitmq_host: rabbitmq
+	awx_rabbitmq_port: "5672"
+
+	awx_memcached_deploy: true
+	awx_memcached_image: memcached:alpine
+	awx_memcached_host: memcached
+	awx_memcached_port: "11211"
+
+	awx_version: 1.0
+	awx_web_image: ansible/awx_web:{{ awx_version }}
+	awx_task_image: ansible/awx_task:{{ awx_version }}
+	awx_web_port: 80
+	awx_web_container_links: |
+	  {{
+	    (['postgres'] if awx_postgres_deploy else []) +
+	    (['rabbitmq'] if awx_rabbitmq_deploy else []) +
+	    (['memcached'] if awx_memcached_deploy else [])
+	  }}
+	awx_task_container_links: "{{ awx_web_container_links + ['awx_web:awxweb'] }}"
+	awx_volumes: []
+	awx_web_prefix_commands: []
+	awx_task_prefix_commands: []
+
+	# Outbound proxy configurations. https://curl.haxx.se/docs/manual.html
+	awx_http_proxy: ""
+	awx_https_proxy: ""
+	awx_no_proxy: ""
+	# awx_secret_key
+
+	awx_admin_user: admin
+	awx_admin_password: changeme
+
+Example Playbook
+----------------
+
+    - hosts: awx
+      roles:
+        - { role: steamulo.awx }     
+
 License
 -------
 
 BSD
+
+Author Information
+------------------
+
+Steamulo - www.steamulo.com
+
+Forked from [joshbenner](https://github.com/joshbenner)
